@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    name: Build, Test and Security Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Verify formatting
+        run: |
+          files=$(gofmt -l .)
+          if [ -n "$files" ]; then
+            printf '%s\n' "$files"
+            exit 1
+          fi
+
+      - name: Build
+        run: go build ./...
+
+      - name: Static analysis
+        run: go vet ./...
+
+      - name: Test and coverage
+        run: go test ./... -coverprofile=coverage.out -count=1
+
+      - name: Coverage summary
+        run: go tool cover -func=coverage.out
+
+      - name: Race detection
+        env:
+          CGO_ENABLED: "1"
+        run: go test -race ./... -count=1
+
+      - name: RPC fuzz testing
+        run: go test ./internal/rpc -run='^$' -fuzz=FuzzParseQuantity -fuzztime=10s
+
+      - name: Decoder fuzz testing
+        run: go test ./internal/decoder -run='^$' -fuzz=FuzzDecodeEvent -fuzztime=10s

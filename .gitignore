@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+coverage
+coverage/
+coverage.out
+coverage.html
+live-report.json
+bin/
+dist/
+*.exe
+*.test
+*.prof
