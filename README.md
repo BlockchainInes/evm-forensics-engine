@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/BlockchainInes/evm-forensics-engine/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/BlockchainInes/evm-forensics-engine/actions/workflows/ci.yml)
 ![Coverage](https://img.shields.io/badge/coverage-85.0%25-brightgreen)
-![Go](https://img.shields.io/badge/Go-1.27.0-00ADD8?logo=go&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.27.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 Deterministic ERC-20 transaction intelligence, address-level flow reconstruction, and heuristic forensic detection for EVM-compatible networks.
