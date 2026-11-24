@@ -1,5 +1,10 @@
 # EVM Forensics Engine
 
+[![CI](https://github.com/BlockchainInes/evm-forensics-engine/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/BlockchainInes/evm-forensics-engine/actions/workflows/ci.yml)
+![Coverage](https://img.shields.io/badge/coverage-85.0%25-brightgreen)
+![Go](https://img.shields.io/badge/Go-1.27.0-00ADD8?logo=go&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+
 Deterministic ERC-20 transaction intelligence, address-level flow reconstruction, and heuristic forensic detection for EVM-compatible networks.
 
 Implemented in Go with bounded concurrent RPC ingestion, strict event decoding, arbitrary-precision accounting, deterministic analysis, and versioned JSON reporting.
@@ -104,7 +109,7 @@ The reconstruction layer transforms decoded events into token-specific address-l
 
 Reconstruction properties include:
 
-- Canonical ordering within the supplied event dataset
+- Deterministic ordering by block, transaction, and log position
 - Duplicate event identification
 - Conflicting event position rejection
 - Block and transaction consistency validation
@@ -117,7 +122,7 @@ Flow reconstruction represents observed event-derived movements. It does not est
 
 ## Forensic Detection Rules
 
-The detection engine applies three deterministic heuristic rules to reconstructed ERC-20 activity.
+The detection engine applies three deterministic heuristic rules to decoded ERC-20 activity.
 
 ### R-01 — Maximum Approval Followed by Outflow
 
@@ -292,6 +297,8 @@ The dataset was obtained from a single RPC provider. Canonical chain membership,
 
 The validation suite covers event decoding, RPC transport behavior, concurrent ingestion, flow reconstruction, forensic detection, report serialization, and end-to-end CLI execution.
 
+All six packages passed the final local test execution. The initial GitHub Actions validation completed successfully, including race detection and both fuzz targets.
+
 ### Statement Coverage
 
 | Package | Coverage |
@@ -302,8 +309,21 @@ The validation suite covers event decoding, RPC transport behavior, concurrent i
 | `internal/flow` | 97.2% |
 | `internal/report` | 100.0% |
 | `internal/rpc` | 72.7% |
+| **Total statement coverage** | **85.0%** |
 
-All six packages passed the final local test execution.
+Aggregate statement coverage was confirmed by GitHub Actions using `go tool cover -func=coverage.out`.
+
+### Core Function Coverage
+
+| Function | Coverage |
+|---|---:|
+| `Decode` | 100.0% |
+| `Reconstruct` | 98.7% |
+| `detectApprovalOutflow` | 100.0% |
+| `detectFanOut` | 100.0% |
+| `detectCircularFlow` | 100.0% |
+| `NewClient` | 100.0% |
+| `parseQuantity` | 100.0% |
 
 ### Security-Oriented Validation
 
@@ -329,17 +349,24 @@ The test suite includes:
 
 Statement coverage measures executed code paths. It does not establish the absence of defects or security vulnerabilities.
 
+Supplementary RPC methods for transaction receipts, block retrieval, and finalized block retrieval remain outside the current test coverage.
+
 ## Fuzz Testing
 
 Native Go fuzz testing was applied to the event decoder and hexadecimal RPC quantity parser.
+
+### Recorded Local Fuzz Executions
 
 | Fuzz Target | Observed Executions | Result |
 |---|---:|---|
 | `FuzzDecodeEvent` | 794,073 | PASS |
 | `FuzzParseQuantity` | 698,235 | PASS |
 | `FuzzParseQuantity` — additional run | 663,636 | PASS |
+| **Total recorded executions** | **2,156,944** | **PASS** |
 
-The recorded fuzz runs completed without detected test failures.
+The recorded local fuzz runs completed without detected test failures.
+
+Both fuzz targets also passed automated execution within GitHub Actions.
 
 ## Performance Benchmarks
 
@@ -377,14 +404,31 @@ The workflow uses read-only repository permissions and a bounded execution timeo
 
 | Validation | Status |
 |---|---|
-| Local build | Passed |
-| Local static analysis | Passed |
-| Local package tests | Passed |
-| Local fuzz testing | Passed |
+| Source formatting | Passed |
+| Build | Passed |
+| Static analysis | Passed |
+| Unit and integration tests | Passed |
+| Statement coverage | 85.0% |
+| Race detector execution | Passed |
+| RPC fuzz testing | Passed |
+| ERC-20 decoder fuzz testing | Passed |
 | Local performance benchmarks | Completed |
 | Live Sepolia analysis | Completed |
-| GitHub Actions execution | Pending |
-| Race detector execution | Pending |
+| Initial GitHub Actions execution | Passed |
+
+### CI Validation Record
+
+| Parameter | Result |
+|---|---|
+| Initial validated commit | `b0b8c6d` |
+| Runner | Ubuntu |
+| Workflow duration | 1m 58s |
+| Race detection duration | 28s |
+| Workflow result | Success |
+
+No data races were detected during the recorded race-enabled test execution.
+
+Validation records refer to the initial successful CI run. The CI badge reflects the current workflow status.
 
 ## Security Model and Analytical Limitations
 
@@ -444,7 +488,6 @@ evm-forensics-engine/
 │   └── rpc/
 ├── .gitignore
 ├── go.mod
-├── LICENSE
 └── README.md
 ```
 
@@ -455,5 +498,3 @@ Blockchain Forensics · Digital Asset Intelligence · Ethereum JSON-RPC · ERC-2
 ## License
 
 Licensed under the MIT License.
-
-See [LICENSE](LICENSE) for the full license text.
